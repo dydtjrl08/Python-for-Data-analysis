@@ -1,0 +1,55 @@
+void analysis_alphaC()
+{
+
+
+    Short_t adc,det,dch;
+
+
+    auto file = new TFile("data/RUN511.ch.root","read");
+    auto tree = (TTree*) file -> Get("channels");
+
+    //auto cvs = new TCanvas("cvs","cvs",800,600);
+    TH1D *hist_adc = new TH1D("hist_adc","",50,1450,1600);
+    TH1D *hist_det = new TH1D("hist_det","",50,0,10);
+    TH1D *hist_dch = new TH1D("hist_dch","",50,0,35);
+
+    tree -> SetBranchAddress("adc",&adc);
+    tree -> SetBranchAddress("det",&det);
+    tree -> SetBranchAddress("dch",&dch);
+
+
+    int entries = tree -> GetEntries();
+    
+    cout << entries << endl;
+    
+
+    for(int i = 0; i < entries ; i++){
+        tree -> GetEntry(i);
+        hist_adc -> Fill(adc);
+        hist_det -> Fill(det);
+        hist_dch -> Fill(dch);
+
+
+    }
+
+    
+    //tree -> Draw("adc>>hist1","det==2 && dch==10","");
+
+    auto fit1 = new TF1("fit1","gaus(0)",1450,1600);
+    auto fit2 = new TF1("fit2","gaus(0)",1,5);
+    auto fit3 = new TF1("fit3","gaus(0)",0,35);
+    hist_adc -> Fit(fit1);
+    hist_det -> Fit(fit2);
+    hist_dch -> Fit(fit3);
+
+    
+    TCanvas *c1 = new TCanvas("c1","good");
+    c1->Divide(3);
+    c1-> cd(1);
+    hist_adc->Draw();
+    c1 -> cd(2);
+    hist_det -> Draw();
+    c1 -> cd(3);
+    hist_dch -> Draw();
+
+}
